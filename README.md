@@ -1,0 +1,1 @@
+cmake -DOROCOS-RTT_DIR=/homes/dwigand/code/cogimon/orocos_toolchain/instprefix/lib/cmake/orocos-rtt -DRCI_DIR=/vol/toolkit/nightly/trusty/x86_64/last/share/rci0.5 -DRSC_DIR=/vol/toolkit/nightly/trusty/x86_64/last/share/rsc0.13 -DNemoMath_DIR=/vol/toolkit/nightly/trusty/x86_64/last/share/NemoMath0.5 ..

@@ -1,0 +1,15 @@
+import("RTTLWRSynchronizer");
+
+loadComponent("Test1","RTTLWRSynchronizer");
+
+setActivity("Test1",0.1,HighestPriority,ORO_SCHED_RT)
+
+//var ConnPolicy cp;
+//cp.type = DATA;
+////cp.size = 1;
+//cp.lock_policy = LOCK_FREE; //LOCK_FREE // LOCKED
+
+//connect("Test1.cmdJntPos","Test1.currJntPos",cp);
+
+Test1.configure()
+Test1.start()
