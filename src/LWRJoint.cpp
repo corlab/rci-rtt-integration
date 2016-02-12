@@ -13,6 +13,7 @@ LWRJoint::LWRJoint(std::string name) :
 				2), _once(true), limitMin(), limitMax(), jointLimitsDefined(
 				false) {
 	this->_latestJointPosition = JointAngles::fromRad(0.0);
+	this->_latestJointVelocity = JointVelocities::fromRad_s(0.0);
 	this->torques = JointTorques::fromNm(0.0);
 	this->_lastCommandedImpedance = JointImpedancePtr(
 			new JointImpedance(JointStiffness(50.0), JointDamping(0.7)));
@@ -24,6 +25,7 @@ LWRJoint::LWRJoint(const JointAngles& limMin, const JointAngles& limMax,
 				2), _once(true), limitMin(limMin), limitMax(limMax), jointLimitsDefined(
 				true) {
 	this->_latestJointPosition = JointAngles::fromRad(0.0);
+	this->_latestJointVelocity = JointVelocities::fromRad_s(0.0);
 	this->torques = JointTorques::fromNm(RealVector(0.0, 0.0));
 	this->_lastCommandedImpedance = JointImpedancePtr(
 			new JointImpedance(JointStiffness(500.0), JointDamping(0.7)));
@@ -45,12 +47,14 @@ bool LWRJoint::isConverged() const {
 void LWRJoint::reset() {
 	// Empty latest commands
 	this->_lastCommandedPosition = JointAnglesPtr();
+	this->_lastCommandedVelocity = JointVelocitiesPtr();
 	this->_lastCommandedImpedance = JointImpedancePtr(
 			new JointImpedance(JointStiffness(50.0), JointDamping(0.7)));
 	this->_lastCommandedTorque = JointTorquesPtr();
 
-// Reset latest sensor reads as in constructor
+	// Reset latest sensor reads as in constructor
 	this->_latestJointPosition = JointAngles::fromRad(0.0);
+	this->_latestJointVelocity = JointVelocities::fromRad_s(0.0);
 	this->torques = JointTorques::fromNm(RealVector(0.0, 0.0));
 }
 
@@ -80,6 +84,32 @@ bool LWRJoint::setJointPosition(JointAnglesPtr position) {
 	return true;
 }
 
+bool LWRJoint::setJointVelocity(JointVelocitiesPtr velocity) {
+	recursive_mutex::scoped_lock scoped_lock(velocityCommandMutex);
+	if (velocity == NULL) {
+		throw std::runtime_error(
+				"[LWRJoint::setJointVelocity] Got null pointer!");
+	}
+
+	// check joint velocity limits TODO
+//	if (jointLimitsDefined) {
+//		for (unsigned int i = 0; i < position->getDimension(); i++) {
+//			if ((position->asDouble(i) < limitMin.asDouble(i))
+//					|| (position->asDouble(i) > limitMax.asDouble(i))) {
+//				return false;
+//			}
+//		}
+//	}
+
+	if (this->_lastCommandedVelocity == NULL) {
+		this->_lastCommandedVelocity = JointVelocities::copy(*velocity);
+	} else {
+		this->_lastCommandedVelocity->setFromRad_s(0, velocity->rad_s(0));
+	}
+
+	return true;
+}
+
 bool LWRJoint::setJointImpedance(JointImpedancePtr impedance) {
 	recursive_mutex::scoped_lock scoped_lock(impedanceCommandMutex);
 	if (impedance == NULL) {
@@ -87,7 +117,7 @@ bool LWRJoint::setJointImpedance(JointImpedancePtr impedance) {
 				"[LWRJoint::setJointImpedance] Got null pointer!");
 	}
 
-	// Successfull
+	// Successful
 	if (this->_lastCommandedImpedance == NULL) {
 		this->_lastCommandedImpedance = JointImpedance::copy(*impedance);
 	} else {
@@ -125,6 +155,15 @@ void LWRJoint::updateJointPosition(JointAnglesPtr angle) {
 	}
 }
 
+void LWRJoint::updateJointVelocity(JointVelocitiesPtr vel) {
+	recursive_mutex::scoped_lock scoped_lock(velocityStatusMutex);
+	if (this->_latestJointVelocity == NULL) {
+		this->_latestJointVelocity = JointVelocities::copy(*vel);
+	} else {
+		this->_latestJointVelocity->setFromRad_s(0, vel->rad_s(0));
+	}
+}
+
 void LWRJoint::updateTorque(rci::JointTorquesPtr torque) {
 	recursive_mutex::scoped_lock scoped_lock(torqueStatusMutex);
 	if (this->torques == NULL) {
@@ -146,6 +185,11 @@ void LWRJoint::update() {
 JointAnglesPtr LWRJoint::getJointPosition() const {
 	recursive_mutex::scoped_lock scoped_lock(angleStatusMutex);
 	return this->_latestJointPosition;
+}
+
+JointVelocitiesPtr LWRJoint::getVelocity() const {
+	recursive_mutex::scoped_lock scoped_lock(velocityStatusMutex);
+	return this->_latestJointVelocity;
 }
 
 JointTorquesPtr LWRJoint::getTorque() const {
@@ -178,6 +222,22 @@ JointAnglesPtr LWRJoint::getLastPositionCommand() const {
 	}
 
 	throw runtime_error("No position command received yet.");
+}
+
+JointVelocitiesPtr LWRJoint::getLastVelocityCommand() const {
+	recursive_mutex::scoped_lock scoped_lock(velocityCommandMutex);
+
+	if (this->_lastCommandedVelocity) {
+		return this->_lastCommandedVelocity;
+	}
+
+	// If we don`t have a command yet, we return the latest sensor value
+	if (this->_latestJointVelocity) {
+		// TODO: Log
+		return this->_latestJointVelocity;
+	}
+
+	throw runtime_error("No velocity command received yet.");
 }
 
 JointTorquesPtr LWRJoint::getLastTorqueCommand() const {

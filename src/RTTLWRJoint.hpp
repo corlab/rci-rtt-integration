@@ -32,10 +32,12 @@ protected:
 	RTT::InputPort<rci::JointTorquesPtr> INPUT_JntTrq;
 
 	RTT::OutputPort<rci::JointAnglesPtr> OUTPUT_JntPos;
+	RTT::OutputPort<rci::JointVelocitiesPtr> OUTPUT_JntVel;
 	RTT::OutputPort<rci::JointTorquesPtr> OUTPUT_JntTorq;
 	RTT::OutputPort<rci::JointTorquesPtr> OUTPUT_EstExtJntTorq;
 
 	rci::JointAnglesPtr tmpJntAngles;
+	rci::JointVelocitiesPtr tmpJntVelocities;
 	rci::JointImpedancePtr tmpJntImpedance;
 	rci::JointTorquesPtr tmpJntTorques;
 };

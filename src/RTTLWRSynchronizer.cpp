@@ -15,20 +15,26 @@ using namespace boost;
 //#define 	ORO_SCHED_RT   0 /** Hard real-time */
 //#define 	ORO_SCHED_OTHER   1 /** Soft real-time */
 
+#define l(lvl) log(lvl) << "[" << this->getName() << "] "
+
 RTTLWRSynchronizer::RTTLWRSynchronizer(string const& name) :
 		TaskContext(name), cmdJntPos_Port("cmdJntPos"), cmdJntImp_Port(
 				"cmdJntImp"), cmdJntTrq_Port("cmdJntTrq"), currJntPos_Port(
-				"currJntPos"), currJntTrq_Port("currJntTrq"), currJntPos_flow(
+				"currJntPos"), currJntVel_Port("currJntVel"), currJntTrq_Port(
+				"currJntTrq"), currJntPos_flow(RTT::NoData), currJntVel_flow(
 				RTT::NoData), currJntTrq_flow(RTT::NoData) {
 
 	this->ports()->addPort(cmdJntPos_Port).doc(
 			"Sending joint position commands to robot.");
-	this->ports()->addPort(currJntPos_Port).doc(
-			"Receiving current joint position.");
 	this->ports()->addPort(cmdJntImp_Port).doc(
 			"Sending joint impedance commands to robot.");
 	this->ports()->addPort(cmdJntTrq_Port).doc(
 			"Sending joint impedance commands to robot.");
+
+	this->ports()->addPort(currJntPos_Port).doc(
+			"Receiving current joint position.");
+	this->ports()->addPort(currJntVel_Port).doc(
+			"Receiving current joint velocity.");
 	this->ports()->addPort(currJntTrq_Port).doc(
 			"Receiving current joint torques.");
 
@@ -48,6 +54,7 @@ RTTLWRSynchronizer::RTTLWRSynchronizer(string const& name) :
 	sendJntTrq = rci::JointTorques::create(7, 0.0);
 
 	currJntPos = rci::JointAngles::create(7, 0.0);
+	currJntVel = rci::JointVelocities::create(7, 0.0);
 	currJntTrq = rci::JointTorques::create(7, 0.0);
 
 	// init. all output ports with sample data
@@ -173,7 +180,7 @@ void RTTLWRSynchronizer::updateHook() {
 				registeredJointNodes[i]->joint->getLastPositionCommand()->rad(
 						0));
 
-//		log(Info) << "RTTLWRSynchronizer impTest: i = " << i << ", i*2 = "
+//		l(Info) << "RTTLWRSynchronizer impTest: i = " << i << ", i*2 = "
 //				<< i * 2 << ", i*2+1 = " << i * 2 + 1 << ", imp[0] = "
 //				<< registeredJointNodes[i]->joint->getLastImpedanceCommand()->asDouble(
 //						0) << ", imp[1] = "
@@ -208,6 +215,9 @@ void RTTLWRSynchronizer::updateHook() {
 	if (currJntPos_Port.connected())
 		currJntPos_flow = currJntPos_Port.read(currJntPos);
 
+	if (currJntVel_Port.connected())
+		currJntVel_flow = currJntVel_Port.read(currJntVel);
+
 	if (currJntTrq_Port.connected())
 		currJntTrq_flow = currJntTrq_Port.read(currJntTrq);
 
@@ -219,6 +229,11 @@ void RTTLWRSynchronizer::updateHook() {
 		if (currJntPos_flow == RTT::NewData)
 			registeredJointNodes[i]->joint->updateJointPosition(
 					JointAngles::fromRad(currJntPos->rad(i)));
+		// write joint velocity FB to nodes
+		if (currJntVel_flow == RTT::NewData) {
+			registeredJointNodes[i]->joint->updateJointVelocity(currJntVel);
+			log(Error) << "[Synchronizer] DLW: " << currJntVel->print() << endlog();
+		}
 		// write joint torques FB to nodes
 		if (currJntTrq_flow == RTT::NewData)
 			registeredJointNodes[i]->joint->updateTorque(

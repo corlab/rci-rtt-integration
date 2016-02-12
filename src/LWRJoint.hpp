@@ -36,7 +36,9 @@ class LWRJoint: public rci::ResourceNode,
 		public rci::ImpedanceControlled,
 		public rci::TorqueControlled,
 		public rci::PositionSensing,
-		public rci::TorqueSensing {
+		public rci::TorqueSensing,
+		public rci::VelocityControlled,
+		public rci::VelocitySensing {
 
 public:
 
@@ -85,6 +87,13 @@ public:
 	bool setJointTorque(rci::JointTorquesPtr position);
 
 	/**
+	 * Sets position
+	 *
+	 * Sets a position on a joint/actuator (joint space control).
+	 */
+	virtual bool setJointVelocity(rci::JointVelocitiesPtr velocity);
+
+	/**
 	 * Updates internal representation of joint position / angle
 	 */
 	virtual void updateJointPosition(rci::JointAnglesPtr angle);
@@ -95,10 +104,17 @@ public:
 	virtual void updateTorque(rci::JointTorquesPtr torque);
 
 	/**
+	 * Updates internal representation of joint position / angle
+	 */
+	virtual void updateJointVelocity(rci::JointVelocitiesPtr vel);
+
+	/**
 	 * Returns current joint position.
 	 * @return Current joint position
 	 */
 	virtual rci::JointAnglesPtr getJointPosition() const;
+
+	virtual rci::JointVelocitiesPtr getVelocity() const;
 
 	virtual rci::JointTorquesPtr getTorque() const;
 
@@ -108,6 +124,8 @@ public:
 	 * therefore rejected, it ..
 	 */
 	virtual rci::JointAnglesPtr getLastPositionCommand() const;
+
+	virtual rci::JointVelocitiesPtr getLastVelocityCommand() const;
 
 	virtual rci::JointImpedancePtr getLastImpedanceCommand() const;
 
@@ -126,6 +144,8 @@ private:
 
 	mutable boost::recursive_mutex angleCommandMutex;
 	mutable boost::recursive_mutex angleStatusMutex;
+	mutable boost::recursive_mutex velocityCommandMutex;
+	mutable boost::recursive_mutex velocityStatusMutex;
 	mutable boost::recursive_mutex impedanceCommandMutex;
 	mutable boost::recursive_mutex torqueCommandMutex;
 	mutable boost::recursive_mutex torqueStatusMutex;

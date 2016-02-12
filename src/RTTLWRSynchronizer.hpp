@@ -5,6 +5,9 @@
 #include <rtt/Port.hpp>
 
 #include <rci/dto/JointAngles.h>
+#include <rci/dto/JointTorques.h>
+#include <rci/dto/JointVelocities.h>
+#include <rci/dto/JointImpedance.h>
 
 #include <nemo/Mapping.h>
 #include <nemo/Vector.h>
@@ -31,6 +34,7 @@ protected:
 	RTT::OutputPort<rci::JointTorquesPtr> cmdJntTrq_Port;
 
 	RTT::InputPort<rci::JointAnglesPtr> currJntPos_Port;
+	RTT::InputPort<rci::JointVelocitiesPtr> currJntVel_Port;
 	RTT::InputPort<rci::JointTorquesPtr> currJntTrq_Port;
 
 	rci::JointAnglesPtr sendJntPos;
@@ -38,9 +42,11 @@ protected:
 	rci::JointTorquesPtr sendJntTrq;
 
 	rci::JointAnglesPtr currJntPos;
+	rci::JointVelocitiesPtr currJntVel;
 	rci::JointTorquesPtr currJntTrq;
 
 	RTT::FlowStatus currJntPos_flow;
+	RTT::FlowStatus currJntVel_flow;
 	RTT::FlowStatus currJntTrq_flow;
 
 	std::vector<RTTLWRJointPtr> registeredJointNodes;
