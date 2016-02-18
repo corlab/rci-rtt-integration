@@ -24,7 +24,10 @@ include_directories(include
 # Creates a component library libmyrobot-<target>.so
 # and installs in the directory lib/orocos/myrobot/
 #
-orocos_component(RTTLWRSynchronizer RTTLWRSynchronizer.hpp RTTLWRSynchronizer.cpp RTTLWRJoint.hpp RTTLWRJoint.cpp LWRJoint.hpp LWRJoint.cpp)
+
+
+orocos_component(RCIRTTIntegration RTTLWRSynchronizer.hpp RTTLWRSynchronizer.cpp RTTLWRJoint.hpp RTTLWRJoint.cpp LWRJoint.hpp LWRJoint.cpp RTTSplitter/RTTSplitter.cpp RTTSplitter/RTTSplitter.hpp RTTSplitter/RCISplitter.hpp NestedTaskContext.hpp RTTCollector/RCICollector.hpp RTTCollector/RTTCollector.hpp RTTCollector/RTTCollector.cpp)
+
 #
 # You may add multiple orocos_component statements.
 
@@ -33,8 +36,8 @@ orocos_component(RTTLWRSynchronizer RTTLWRSynchronizer.hpp RTTLWRSynchronizer.cp
 #
 # Installs in the include/orocos/myrobot/ directory
 #
-orocos_install_headers(rci-rtt-resource-node)
+orocos_install_headers(RTTLWRSynchronizer.hpp)
 #
 # You may add multiple orocos_install_headers statements.
 
-target_link_libraries(RTTLWRSynchronizer ${RCI_LIBRARIES} ${RSC_LIBRARIES} ${NemoMath_LIBRARIES})
+target_link_libraries(RCIRTTIntegration ${RCI_LIBRARIES} ${RSC_LIBRARIES} ${NemoMath_LIBRARIES})
