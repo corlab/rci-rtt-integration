@@ -180,14 +180,6 @@ void RTTLWRSynchronizer::updateHook() {
 				registeredJointNodes[i]->joint->getLastPositionCommand()->rad(
 						0));
 
-//		l(Info) << "RTTLWRSynchronizer impTest: i = " << i << ", i*2 = "
-//				<< i * 2 << ", i*2+1 = " << i * 2 + 1 << ", imp[0] = "
-//				<< registeredJointNodes[i]->joint->getLastImpedanceCommand()->asDouble(
-//						0) << ", imp[1] = "
-//				<< registeredJointNodes[i]->joint->getLastImpedanceCommand()->asDouble(
-//						1) << ", size = " << sendJntImp->getDimension()
-//				<< endlog();
-
 // read joint impedance command
 		sendJntImp->setValue(i * 2,
 				registeredJointNodes[i]->joint->getLastImpedanceCommand()->asDouble(
@@ -205,9 +197,21 @@ void RTTLWRSynchronizer::updateHook() {
 	/** TODO make everything relative to the CONTROL_MODE!
 	 * If not take current from nodes!
 	 */
-	cmdJntPos_Port.write(sendJntPos);
-	cmdJntImp_Port.write(sendJntImp);
-	cmdJntTrq_Port.write(sendJntTrq);
+
+//	l(Error) << "RTTLWRSynchronizer sendJntPos = " << sendJntPos->print()
+//			<< endlog();
+//	l(Error) << "RTTLWRSynchronizer sendJntTrq = " << sendJntTrq->print()
+//			<< endlog();
+
+	if (cmdJntPos_Port.connected()) {
+		cmdJntPos_Port.write(sendJntPos);
+	}
+	if (cmdJntImp_Port.connected()) {
+		cmdJntImp_Port.write(sendJntImp);
+	}
+	if (cmdJntTrq_Port.connected()) {
+		cmdJntTrq_Port.write(sendJntTrq);
+	}
 
 	// collect input from robot and distribute to nodes
 
@@ -232,7 +236,8 @@ void RTTLWRSynchronizer::updateHook() {
 		// write joint velocity FB to nodes
 		if (currJntVel_flow == RTT::NewData) {
 			registeredJointNodes[i]->joint->updateJointVelocity(currJntVel);
-			log(Error) << "[Synchronizer] DLW: " << currJntVel->print() << endlog();
+			log(Error) << "[Synchronizer] DLW: " << currJntVel->print()
+					<< endlog();
 		}
 		// write joint torques FB to nodes
 		if (currJntTrq_flow == RTT::NewData)

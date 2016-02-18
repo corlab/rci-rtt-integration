@@ -116,8 +116,9 @@ public:
 							dataToBeSplitted->asDouble(i));
 				}
 				for (int i = 0; i < portsToSplitTo.size(); i++) {
-					if (portsToSplitTo[i]->connected())
-					portsToSplitTo[i]->write(dataToBePublished[i]);
+					if (portsToSplitTo[i]->connected()) {
+						portsToSplitTo[i]->write(dataToBePublished[i]);
+					}
 				}
 			}
 		}
