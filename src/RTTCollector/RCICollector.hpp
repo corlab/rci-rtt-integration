@@ -23,8 +23,7 @@ class RCICollector: public RTT::TaskContext {
 
 public:
 	RCICollector(std::string name, int dims) :
-			RTT::TaskContext(name), portToSplitFrom("ToSplit_In"), toBeSplitted_flow(
-					RTT::NoData), dims(dims) {
+			RTT::TaskContext(name), portToPublishTo("Collected_Out"), dims(dims) {
 		BOOST_STATIC_ASSERT(
 				(boost::is_base_of<rci::JointValues, DERIVED>::value));
 
@@ -51,64 +50,88 @@ public:
 	}
 
 	bool configureHook() {
-		this->ports()->addPort(portToSplitFrom).doc(
-				"Input for Data to be splitted.");
-
 		nemo::RealVector initvec(nemo::dim(7), 0.0);
-		dataToBeSplitted = boost::shared_ptr<DERIVED>(new DERIVED(initvec));
+		collectedDataToBePublished = boost::shared_ptr<DERIVED>(
+				new DERIVED(initvec));
+		collectedSingleData = boost::shared_ptr<DERIVED>(new DERIVED(0.0));
 
-		dataToBePublished.resize(dims);
-		for (int i = 0; i < dataToBePublished.size(); i++) {
-			boost::shared_ptr<RTT::OutputPort<boost::shared_ptr<DERIVED> > > tmpPort(
-					new RTT::OutputPort<boost::shared_ptr<DERIVED> >(
-							"Splitted_Out_"
+		this->ports()->addPort(portToPublishTo).doc(
+				"Output for collected Data.");
+		portToPublishTo.setDataSample(collectedDataToBePublished);
+
+		for (int i = 0; i < collectedDataToBePublished->getDimension(); i++) {
+			boost::shared_ptr<RTT::InputPort<boost::shared_ptr<DERIVED> > > tmpPort(
+					new RTT::InputPort<boost::shared_ptr<DERIVED> >(
+							"Collect_In_"
 									+ boost::lexical_cast<std::string>(i)));
-			tmpPort->setDataSample(dataToBeSplitted);
-			this->ports()->addPort(*tmpPort).doc("Output for splitted Data.");
-			portsToSplitTo.push_back(tmpPort);
-			dataToBePublished[i] = boost::shared_ptr<DERIVED>(new DERIVED(0.0));
+			this->ports()->addPort(*tmpPort).doc(
+					"Input for Data to be collected.");
+			portsToCollectFrom.push_back(tmpPort);
+			toBeCollected_flows.push_back(RTT::NoData);
 		}
 		return true;
 	}
 
 	void resetHook() {
 		nemo::RealVector initvec(nemo::dim(7), 0.0);
-		dataToBeSplitted = boost::shared_ptr<DERIVED>(new DERIVED(initvec));
-
-		for (int i = 0; i < dataToBePublished.size(); i++) {
-			dataToBePublished[i] = boost::shared_ptr<DERIVED>(new DERIVED(0.0));
+		collectedDataToBePublished = boost::shared_ptr<DERIVED>(
+				new DERIVED(initvec));
+		collectedSingleData = boost::shared_ptr<DERIVED>(new DERIVED(0.0));
+		for (int i = 0; i < toBeCollected_flows.size(); i++) {
+			toBeCollected_flows[i] = RTT::NoData;
 		}
 	}
 
 	void updateHook() {
-//		if (portToSplitFrom.connected()) {
-//			toBeSplitted_flow = portToSplitFrom.read(dataToBeSplitted);
-//			if (toBeSplitted_flow == RTT::NewData) {
-//				if (dataToBeSplitted->getDimension() != dims) {
-//					RTT::log(RTT::Error) << "[" << this->getName() << "] "
-//							<< "Dimension mismatch. Expecting " << dims
-//							<< " dimensions and not "
-//							<< dataToBeSplitted->getDimension() << "dimensions!"
-//							<< RTT::endlog();
-//					return;
-//				}
-//				for (int i = 0; i < dataToBePublished.size(); i++) {
-//					dataToBePublished[i]->setValue(0,
-//							dataToBeSplitted->asDouble(i));
-//				}
-//				for (int i = 0; i < portsToSplitTo.size(); i++) {
-//					if (portsToSplitTo[i]->connected())
-//						portsToSplitTo[i]->write(dataToBePublished[i]);
-//				}
-//			}
-//		}
+		for (int i = 0; i < portsToCollectFrom.size(); i++) {
+			if (portsToCollectFrom[i]->connected()) {
+				toBeCollected_flows[i] = portsToCollectFrom[i]->read(
+						collectedSingleData);
+				if (toBeCollected_flows[i] == RTT::NoData) {
+					RTT::log(RTT::Warning) << "[" << this->getName()
+							<< "] Port " << portsToCollectFrom[i]->getName()
+							<< " receives no data but is connected! Skipping publishing process!"
+							<< RTT::endlog();
+					return;
+				}
+				if (toBeCollected_flows[i] == RTT::NewData) {
+					if (collectedSingleData->getDimension() != 1) {
+						RTT::log(RTT::Error) << "[" << this->getName() << "] "
+								<< "Dimension mismatch. Expecting " << 1
+								<< " dimension and not "
+								<< collectedSingleData->getDimension()
+								<< "dimensions!" << RTT::endlog();
+						return;
+					} else {
+						collectedDataToBePublished->setValue(i,
+								collectedSingleData->asDouble(0));
+					}
+				}
+			} else {
+				RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
+						<< portsToCollectFrom[i]->getName()
+						<< " is not connected! Skipping publishing process!"
+						<< RTT::endlog();
+				return;
+			}
+		}
+
+		if (portToPublishTo.connected()) {
+			portToPublishTo.write(collectedDataToBePublished);
+		} else {
+			RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
+					<< portToPublishTo.getName()
+					<< " is not connected! Skipping publishing process!"
+					<< RTT::endlog();
+		}
 	}
 
 protected:
-	boost::shared_ptr<DERIVED> dataToBeSplitted;
-	RTT::InputPort<boost::shared_ptr<DERIVED> > portToSplitFrom;
-	std::vector<boost::shared_ptr<RTT::OutputPort<boost::shared_ptr<DERIVED> > > > portsToSplitTo;
-	RTT::FlowStatus toBeSplitted_flow;
+	boost::shared_ptr<DERIVED> collectedDataToBePublished;
+	boost::shared_ptr<DERIVED> collectedSingleData;
+	RTT::OutputPort<boost::shared_ptr<DERIVED> > portToPublishTo;
+	std::vector<boost::shared_ptr<RTT::InputPort<boost::shared_ptr<DERIVED> > > > portsToCollectFrom;
+	std::vector<RTT::FlowStatus> toBeCollected_flows;
 	int dims;
 };
 
