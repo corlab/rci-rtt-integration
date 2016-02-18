@@ -13,9 +13,9 @@
 
 #include "RCISplitter.hpp"
 
-class RTTSplitter: public RTT::TaskContext {
+class RTTLWRSplitter: public RTT::TaskContext {
 public:
-	RTTSplitter(std::string const& name);
+	RTTLWRSplitter(std::string const& name);
 
 	bool connectPortTo(std::string portOut, std::string PortIn,
 			RTT::ConnPolicy connP);

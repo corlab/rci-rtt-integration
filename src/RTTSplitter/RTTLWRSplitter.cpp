@@ -1,6 +1,7 @@
+#include "RTTLWRSplitter.hpp"
+
 #include <rtt/RTT.hpp>
 #include <rtt/Component.hpp>
-#include "RTTSplitter.hpp"
 #include <rtt/extras/PeriodicActivity.hpp>
 #include <rtt/Activity.hpp>
 #include <boost/lexical_cast.hpp>
@@ -17,20 +18,21 @@ using namespace boost;
 
 #define dims 7
 
-RTTSplitter::RTTSplitter(string const& name) :
+RTTLWRSplitter::RTTLWRSplitter(string const& name) :
 		TaskContext(name) {
 
-	this->addOperation("connectPortTo", &RTTSplitter::connectPortTo,
-			this, OwnThread).doc("Connect (also nested) peer ports").arg(
-			"portOut", "relative path for OutputPort").arg("portIn",
+	this->addOperation("connectPortTo", &RTTLWRSplitter::connectPortTo, this,
+			OwnThread).doc("Connect (also nested) peer ports").arg("portOut",
+			"relative path for OutputPort").arg("portIn",
 			"relative path for InputPort").arg("connP",
 			"ConnPolicy used for the connection");
 }
 
-void RTTSplitter::configureJointNodesDefault() {
+void RTTLWRSplitter::configureJointNodesDefault() {
 	for (int i = 0; i < dims; i++) {
 		shared_ptr<RCISplitter<rci::JointAngles> > jaSplitter(
-				new RCISplitter<rci::JointAngles>("JointAngles_Splitter", dims));
+				new RCISplitter<rci::JointAngles>("JointAngles_Splitter",
+						dims));
 		this->addPeer((TaskContext*) jaSplitter.get(), jaSplitter->getName());
 		registeredSplitterNodes.push_back(jaSplitter);
 
@@ -41,13 +43,14 @@ void RTTSplitter::configureJointNodesDefault() {
 		registeredSplitterNodes.push_back(jvSplitter);
 
 		shared_ptr<RCISplitter<rci::JointTorques> > jtSplitter(
-				new RCISplitter<rci::JointTorques>("JointTorques_Splitter", dims));
+				new RCISplitter<rci::JointTorques>("JointTorques_Splitter",
+						dims));
 		this->addPeer((TaskContext*) jtSplitter.get(), jtSplitter->getName());
 		registeredSplitterNodes.push_back(jtSplitter);
 	}
 }
 
-RTT::base::PortInterface* RTTSplitter::findNestedPort(
+RTT::base::PortInterface* RTTLWRSplitter::findNestedPort(
 		std::vector<std::string>& nestedPath, TaskContext* context) {
 	if (context == NULL) {
 		log(Error) << "[RTTLWRSynchronizer] context is NULL -> return"
@@ -69,11 +72,11 @@ RTT::base::PortInterface* RTTSplitter::findNestedPort(
 	}
 }
 
-void RTTSplitter::configureJointNodes() {
+void RTTLWRSplitter::configureJointNodes() {
 	configureJointNodesDefault();
 }
 
-bool RTTSplitter::connectPortTo(std::string portOut, std::string portIn,
+bool RTTLWRSplitter::connectPortTo(std::string portOut, std::string portIn,
 		ConnPolicy connP) {
 	// 1) extract peers and ports from path
 	vector<string> portOut_strs;
@@ -120,7 +123,7 @@ bool RTTSplitter::connectPortTo(std::string portOut, std::string portIn,
 	return retVal;
 }
 
-bool RTTSplitter::configureHook() {
+bool RTTLWRSplitter::configureHook() {
 	configureJointNodes();
 
 	for (std::vector<boost::shared_ptr<RTT::TaskContext> >::iterator it =
@@ -135,10 +138,10 @@ bool RTTSplitter::configureHook() {
 	return true;
 }
 
-void RTTSplitter::updateHook() {
+void RTTLWRSplitter::updateHook() {
 }
 
-bool RTTSplitter::startHook() {
+bool RTTLWRSplitter::startHook() {
 	for (std::vector<boost::shared_ptr<RTT::TaskContext> >::iterator it =
 			registeredSplitterNodes.begin();
 			it != registeredSplitterNodes.end(); ++it) {
@@ -148,21 +151,21 @@ bool RTTSplitter::startHook() {
 	return true;
 }
 
-void RTTSplitter::stopHook() {
+void RTTLWRSplitter::stopHook() {
 	for (std::vector<boost::shared_ptr<RTT::TaskContext> >::iterator it =
-			registeredSplitterNodes.begin(); it != registeredSplitterNodes.end();
-				++it) {
-			(*it)->stop();
-		}
+			registeredSplitterNodes.begin();
+			it != registeredSplitterNodes.end(); ++it) {
+		(*it)->stop();
+	}
 	l(Info)<< "executes stopping !" << endlog();
 }
 
-void RTTSplitter::cleanupHook() {
+void RTTLWRSplitter::cleanupHook() {
 	for (std::vector<boost::shared_ptr<RTT::TaskContext> >::iterator it =
-			registeredSplitterNodes.begin(); it != registeredSplitterNodes.end();
-				++it) {
-			(*it)->cleanup();
-		}
+			registeredSplitterNodes.begin();
+			it != registeredSplitterNodes.end(); ++it) {
+		(*it)->cleanup();
+	}
 	l(Info)<< "cleaning up !" << endlog();
 }
 
@@ -179,4 +182,4 @@ void RTTSplitter::cleanupHook() {
  * in a namespace, don't forget to add it here too:
  */
 
-ORO_LIST_COMPONENT_TYPE(RTTSplitter)
+ORO_LIST_COMPONENT_TYPE(RTTLWRSplitter)

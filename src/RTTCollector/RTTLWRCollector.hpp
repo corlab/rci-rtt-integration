@@ -13,11 +13,11 @@
 #include <nemo/Mapping.h>
 #include <nemo/Vector.h>
 
-#include "RCICollector.hpp"
+#include "../RTTCollector/RCICollector.hpp"
 
-class RTTCollector: public NestedTaskContext {
+class RTTLWRCollector: public NestedTaskContext {
 public:
-	RTTCollector(std::string const& name);
+	RTTLWRCollector(std::string const& name);
 
 	bool configureHook();
 	bool startHook();

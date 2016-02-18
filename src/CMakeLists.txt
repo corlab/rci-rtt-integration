@@ -26,7 +26,7 @@ include_directories(include
 #
 
 
-orocos_component(RCIRTTIntegration RTTLWRSynchronizer.hpp RTTLWRSynchronizer.cpp RTTLWRJoint.hpp RTTLWRJoint.cpp LWRJoint.hpp LWRJoint.cpp RTTSplitter/RTTSplitter.cpp RTTSplitter/RTTSplitter.hpp RTTSplitter/RCISplitter.hpp NestedTaskContext.hpp RTTCollector/RCICollector.hpp RTTCollector/RTTCollector.hpp RTTCollector/RTTCollector.cpp)
+orocos_component(RCIRTTIntegration RTTLWRSynchronizer.hpp RTTLWRSynchronizer.cpp RTTLWRJoint.hpp RTTLWRJoint.cpp LWRJoint.hpp LWRJoint.cpp RTTSplitter/RTTLWRSplitter.cpp RTTSplitter/RTTLWRSplitter.hpp RTTSplitter/RCISplitter.hpp NestedTaskContext.hpp RTTCollector/RCICollector.hpp RTTCollector/RTTLWRCollector.hpp RTTCollector/RTTLWRCollector.cpp)
 
 #
 # You may add multiple orocos_component statements.

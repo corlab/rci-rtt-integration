@@ -1,5 +1,7 @@
-#include "RTTCollector.hpp"
-#include "RTTCollector.hpp"
+#include "RTTLWRCollector.hpp"
+
+#include "../RTTCollector/RTTLWRCollector.hpp"
+
 #include <rtt/RTT.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/extras/PeriodicActivity.hpp>
@@ -17,7 +19,7 @@ using namespace boost;
 
 #define dims 7
 
-RTTCollector::RTTCollector(string const& name) :
+RTTLWRCollector::RTTLWRCollector(string const& name) :
 		NestedTaskContext(name) {
 }
 
@@ -43,7 +45,7 @@ void NestedTaskContext::configureJointNodes() {
 	}
 }
 
-bool RTTCollector::configureHook() {
+bool RTTLWRCollector::configureHook() {
 	configureJointNodes();
 
 	for (std::vector<boost::shared_ptr<RTT::TaskContext> >::iterator it =
@@ -57,21 +59,21 @@ bool RTTCollector::configureHook() {
 	return true;
 }
 
-void RTTCollector::updateHook() {
+void RTTLWRCollector::updateHook() {
 }
 
-bool RTTCollector::startHook() {
+bool RTTLWRCollector::startHook() {
 	this->startH();
 	l(Info) << "started !" << endlog();
 	return true;
 }
 
-void RTTCollector::stopHook() {
+void RTTLWRCollector::stopHook() {
 	this->stopH();
 	l(Info) << "executes stopping !" << endlog();
 }
 
-void RTTCollector::cleanupHook() {
+void RTTLWRCollector::cleanupHook() {
 	this->cleanupH();
 	l(Info) << "cleaning up !" << endlog();
 }
@@ -89,4 +91,4 @@ void RTTCollector::cleanupHook() {
  * in a namespace, don't forget to add it here too:
  */
 
-ORO_LIST_COMPONENT_TYPE(RTTCollector)
+ORO_LIST_COMPONENT_TYPE(RTTLWRCollector)
