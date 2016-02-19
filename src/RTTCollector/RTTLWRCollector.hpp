@@ -9,6 +9,7 @@
 #include <rci/dto/JointAngles.h>
 #include <rci/dto/JointVelocities.h>
 #include <rci/dto/JointTorques.h>
+#include <rci/dto/JointImpedance.h>
 
 #include <nemo/Mapping.h>
 #include <nemo/Vector.h>

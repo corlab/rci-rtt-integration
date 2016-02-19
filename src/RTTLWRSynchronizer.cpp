@@ -180,7 +180,7 @@ void RTTLWRSynchronizer::updateHook() {
 				registeredJointNodes[i]->joint->getLastPositionCommand()->rad(
 						0));
 
-// read joint impedance command
+		// read joint impedance command
 		sendJntImp->setValue(i * 2,
 				registeredJointNodes[i]->joint->getLastImpedanceCommand()->asDouble(
 						0));
@@ -241,8 +241,6 @@ void RTTLWRSynchronizer::updateHook() {
 		// write joint velocity FB to nodes
 		if (currJntVel_flow == RTT::NewData) {
 			registeredJointNodes[i]->joint->updateJointVelocity(currJntVel);
-			log(Error) << "[Synchronizer] DLW: " << currJntVel->print()
-					<< endlog();
 		}
 		// write joint torques FB to nodes
 		if (currJntTrq_flow == RTT::NewData)

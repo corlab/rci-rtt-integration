@@ -25,23 +25,23 @@ RTTLWRCollector::RTTLWRCollector(string const& name) :
 
 void NestedTaskContext::configureJointNodes() {
 	for (int i = 0; i < dims; i++) {
-		shared_ptr<RCICollector<rci::JointAngles> > jaSplitter(
+		shared_ptr<RCICollector<rci::JointAngles> > jaCollector(
 				new RCICollector<rci::JointAngles>("JointAngles_Collector",
 				dims));
-		this->addPeer((TaskContext*) jaSplitter.get(), jaSplitter->getName());
-		registeredNodes.push_back(jaSplitter);
+		this->addPeer((TaskContext*) jaCollector.get(), jaCollector->getName());
+		registeredNodes.push_back(jaCollector);
 
-		shared_ptr<RCICollector<rci::JointVelocities> > jvSplitter(
+		shared_ptr<RCICollector<rci::JointVelocities> > jvCollector(
 				new RCICollector<rci::JointVelocities>(
 						"JointVelocities_Collector", dims));
-		this->addPeer((TaskContext*) jvSplitter.get(), jvSplitter->getName());
-		registeredNodes.push_back(jvSplitter);
+		this->addPeer((TaskContext*) jvCollector.get(), jvCollector->getName());
+		registeredNodes.push_back(jvCollector);
 
-		shared_ptr<RCICollector<rci::JointTorques> > jtSplitter(
+		shared_ptr<RCICollector<rci::JointTorques> > jtCollector(
 				new RCICollector<rci::JointTorques>("JointTorques_Collector",
 				dims));
-		this->addPeer((TaskContext*) jtSplitter.get(), jtSplitter->getName());
-		registeredNodes.push_back(jtSplitter);
+		this->addPeer((TaskContext*) jtCollector.get(), jtCollector->getName());
+		registeredNodes.push_back(jtCollector);
 	}
 }
 
