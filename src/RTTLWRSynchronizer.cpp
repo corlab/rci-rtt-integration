@@ -204,8 +204,8 @@ void RTTLWRSynchronizer::updateHook() {
 //			<< endlog();
 
 
-	log(Error) << "[RTTLWRSynchronizer] cmdJntPos_Port.write(sendJntPos) " << sendJntPos->print() << endlog();
-	log(Error) << "[RTTLWRSynchronizer] cmdJntTrq_Port.write(sendJntTrq) " << sendJntTrq->print() << endlog();
+//	log(Error) << "[RTTLWRSynchronizer] cmdJntPos_Port.write(sendJntPos) " << sendJntPos->print() << endlog();
+//	log(Error) << "[RTTLWRSynchronizer] cmdJntTrq_Port.write(sendJntTrq) " << sendJntTrq->print() << endlog();
 
 
 	if (cmdJntPos_Port.connected()) {
