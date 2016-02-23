@@ -81,17 +81,21 @@ void RTTLWRJoint::updateHook() {
 	}
 
 	// Send out latest sensor read FB out
-	if (OUTPUT_JntPos.connected())
+	if (OUTPUT_JntPos.connected()) {
 		OUTPUT_JntPos.write(this->joint->getJointPosition());
-	if (OUTPUT_JntVel.connected())
+	}
+	if (OUTPUT_JntVel.connected()) {
 		OUTPUT_JntVel.write(this->joint->getVelocity());
+	}
 	// TODO check if this creation is an issue for RT...!
-	if (OUTPUT_JntTorq.connected())
+	if (OUTPUT_JntTorq.connected()) {
 		OUTPUT_JntTorq.write(
 				rci::JointTorques::fromNm(this->joint->getTorque()->Nm(0))); //actual measured torques
-	if (OUTPUT_EstExtJntTorq.connected())
+	}
+	if (OUTPUT_EstExtJntTorq.connected()) {
 		OUTPUT_EstExtJntTorq.write(
 				rci::JointTorques::fromNm(this->joint->getTorque()->Nm(1))); //estimated external torques
+	}
 }
 
 bool RTTLWRJoint::startHook() {

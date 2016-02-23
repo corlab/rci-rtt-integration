@@ -88,10 +88,10 @@ public:
 				toBeCollected_flows[i] = portsToCollectFrom[i]->read(
 						collectedSingleData);
 				if (toBeCollected_flows[i] == RTT::NoData) {
-					RTT::log(RTT::Warning) << "[" << this->getName()
-							<< "] Port " << portsToCollectFrom[i]->getName()
-							<< " receives no data but is connected! Skipping publishing process!"
-							<< RTT::endlog();
+//					RTT::log(RTT::Warning) << "[" << this->getName()
+//							<< "] Port " << portsToCollectFrom[i]->getName()
+//							<< " receives no data but is connected! Skipping publishing process!"
+//							<< RTT::endlog();
 					return;
 				}
 				if (toBeCollected_flows[i] == RTT::NewData) {
@@ -102,28 +102,30 @@ public:
 								<< collectedSingleData->getDimension()
 								<< "dimensions!" << RTT::endlog();
 						return;
-					} else {
-						collectedDataToBePublished->setValue(i,
-								collectedSingleData->asDouble(0));
 					}
 				}
-			} else {
-				RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
-						<< portsToCollectFrom[i]->getName()
-						<< " is not connected! Skipping publishing process!"
-						<< RTT::endlog();
-				return;
+
+				// this means it publishes even if it only has old data for a long time... TODO (not sure if this is good or bad)
+				collectedDataToBePublished->setValue(i,
+						collectedSingleData->asDouble(0));
+
+//			} else {
+//				RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
+//						<< portsToCollectFrom[i]->getName()
+//						<< " is not connected! Skipping publishing process!"
+//						<< RTT::endlog();
+//				return;
 			}
 		}
 
 		if (portToPublishTo.connected()) {
 			portToPublishTo.write(collectedDataToBePublished);
-		} else {
-			RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
-					<< portToPublishTo.getName()
-					<< " is not connected! Skipping publishing process!"
-					<< RTT::endlog();
-		}
+		} //else {
+//			RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
+//					<< portToPublishTo.getName()
+//					<< " is not connected! Skipping publishing process (out)!"
+//					<< RTT::endlog();
+//		}
 	}
 
 protected:

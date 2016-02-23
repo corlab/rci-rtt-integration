@@ -110,8 +110,8 @@ bool RTTLWRSynchronizer::connectPortTo(std::string portOut, std::string portIn,
 	if ((portOut_strs[0] == "this") || (portOut_strs[0] == "This")
 			|| (portOut_strs[0] == this->getName())) {
 		if (!this->hasPeer(portIn_strs[0])) {
-			log(Warning)
-					<< "[RTTLWRSynchronizer] If the connection can't be established, check if "
+			l(Warning)
+					<< "If the connection can't be established, check if "
 					<< portOut_strs[0] << " and " << portIn_strs[0]
 					<< " are peers." << endlog();
 		}
@@ -119,8 +119,8 @@ bool RTTLWRSynchronizer::connectPortTo(std::string portOut, std::string portIn,
 	} else if ((portIn_strs[0] == "this") || (portIn_strs[0] == "This")
 			|| (portIn_strs[0] == this->getName())) {
 		if (!this->hasPeer(portOut_strs[0])) {
-			log(Warning)
-					<< "[RTTLWRSynchronizer] If the connection can't be established, check if "
+			l(Warning)
+					<< "If the connection can't be established, check if "
 					<< portIn_strs[0] << " and " << portOut_strs[0]
 					<< " are peers." << endlog();
 		}
@@ -134,12 +134,11 @@ bool RTTLWRSynchronizer::connectPortTo(std::string portOut, std::string portIn,
 	bool retVal = portOut_ptr->connectTo(portIn_ptr, connP);
 
 	if (!retVal) {
-		log(Error)
-				<< "[RTTLWRSynchronizer] Could not establish connection between "
-				<< portOut << " and " << portIn << endlog();
+		l(Error) << "Could not establish connection between " << portOut
+				<< " and " << portIn << endlog();
 	} else {
-		log(Info) << "[RTTLWRSynchronizer] Connection between " << portOut
-				<< " and " << portIn << " established!" << endlog();
+		l(Info) << "Connection between " << portOut << " and " << portIn
+				<< " established!" << endlog();
 	}
 
 	return retVal;
@@ -203,10 +202,8 @@ void RTTLWRSynchronizer::updateHook() {
 //	l(Error) << "RTTLWRSynchronizer sendJntTrq = " << sendJntTrq->print()
 //			<< endlog();
 
-
 //	log(Error) << "[RTTLWRSynchronizer] cmdJntPos_Port.write(sendJntPos) " << sendJntPos->print() << endlog();
 //	log(Error) << "[RTTLWRSynchronizer] cmdJntTrq_Port.write(sendJntTrq) " << sendJntTrq->print() << endlog();
-
 
 	if (cmdJntPos_Port.connected()) {
 		cmdJntPos_Port.write(sendJntPos);
@@ -221,32 +218,34 @@ void RTTLWRSynchronizer::updateHook() {
 	// collect input from robot and distribute to nodes
 
 	// collect from robot
-	if (currJntPos_Port.connected())
+	if (currJntPos_Port.connected()) {
 		currJntPos_flow = currJntPos_Port.read(currJntPos);
-
-	if (currJntVel_Port.connected())
+	}
+	if (currJntVel_Port.connected()) {
 		currJntVel_flow = currJntVel_Port.read(currJntVel);
-
-	if (currJntTrq_Port.connected())
+	}
+	if (currJntTrq_Port.connected()) {
 		currJntTrq_flow = currJntTrq_Port.read(currJntTrq);
-
+	}
 	//TODO add exstimated external torques
 
 	// updated nodes with FB
 	for (int i = 0; i < registeredJointNodes.size(); i++) {
 		// write joint position FB to nodes
-		if (currJntPos_flow == RTT::NewData)
+		if (currJntPos_flow == RTT::NewData) {
 			registeredJointNodes[i]->joint->updateJointPosition(
 					JointAngles::fromRad(currJntPos->rad(i)));
+		}
 		// write joint velocity FB to nodes
 		if (currJntVel_flow == RTT::NewData) {
-			registeredJointNodes[i]->joint->updateJointVelocity(currJntVel);
+			registeredJointNodes[i]->joint->updateJointVelocity(
+					JointVelocities::fromRad_s(currJntVel->rad_s(i)));
 		}
 		// write joint torques FB to nodes
-		if (currJntTrq_flow == RTT::NewData)
+		if (currJntTrq_flow == RTT::NewData) {
 			registeredJointNodes[i]->joint->updateTorque(
 					JointTorques::fromNm(currJntTrq->Nm(i)));
-
+		}
 		//TODO add estimated external torques
 	}
 }
