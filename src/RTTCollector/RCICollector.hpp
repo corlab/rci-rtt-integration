@@ -119,6 +119,7 @@ public:
 		}
 
 		if (portToPublishTo.connected()) {
+//			RTT::log(RTT::Info) << "[" << this->getName() << "] collectedDataToBePublished = " << collectedDataToBePublished->print() << RTT::endlog();
 			portToPublishTo.write(collectedDataToBePublished);
 		} //else {
 //			RTT::log(RTT::Warning) << "[" << this->getName() << "] Port "
